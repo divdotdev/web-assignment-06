@@ -113,9 +113,18 @@ const getMyResults = async (req, res) => {
 
 const getResultById = async (req, res) => {
   try {
-    const result = await Result.findById(req.params.id)
+    let result = await Result.findById(req.params.id)
       .populate("student", "name rollNumber email semester")
       .populate("exam");
+
+    if (!result) {
+      result = await Result.findOne({
+        exam: req.params.id,
+        ...(req.user.role === "student" ? { student: req.user.userId } : {})
+      })
+        .populate("student", "name rollNumber email semester")
+        .populate("exam");
+    }
 
     if (!result) {
       return res.status(404).json({ message: "Result not found" });
@@ -154,13 +163,20 @@ const getDashboardStats = async (req, res) => {
     const passPercentage = Number(((passedCount / totalResults) * 100).toFixed(2));
 
     const sortedResults = [...results].sort((a, b) => b.percentage - a.percentage);
-    const topStudents = sortedResults.slice(0, 5).map((r) => ({
-      name: r.student ? r.student.name : "N/A",
-      rollNumber: r.student ? r.student.rollNumber : "N/A",
-      percentage: r.percentage,
-      grade: r.grade,
-      status: r.status
-    }));
+    let currentRank = 1;
+    const topStudents = sortedResults.slice(0, 5).map((r, i) => {
+      if (i > 0 && r.percentage < sortedResults[i - 1].percentage) {
+        currentRank = i + 1;
+      }
+      return {
+        rank: currentRank,
+        name: r.student ? r.student.name : "N/A",
+        rollNumber: r.student ? r.student.rollNumber : "N/A",
+        percentage: r.percentage,
+        grade: r.grade,
+        status: r.status
+      };
+    });
 
     const subjectMap = {};
     results.forEach((r) => {

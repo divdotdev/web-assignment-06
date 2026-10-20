@@ -65,7 +65,7 @@ function AdminDashboard() {
         <tbody>
           {stats.topStudents.map((st, idx) => (
             <tr key={idx}>
-              <td>#{idx + 1}</td>
+              <td>#{st.rank}</td>
               <td>{st.rollNumber}</td>
               <td>{st.name}</td>
               <td>{st.percentage}%</td>

@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { fetchExams, deleteExam, togglePublishExam } from "../api/examApi";
 
 function ExamsList() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
   const token = localStorage.getItem("token");
+
+  const search = searchParams.get("search") || "";
+  const semesterFilter = searchParams.get("semester") || "";
 
   const loadExams = async () => {
     setLoading(true);
@@ -52,6 +56,12 @@ function ExamsList() {
     }
   };
 
+  const filteredExams = exams.filter((exam) => {
+    const matchesSearch = exam.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSemester = semesterFilter ? exam.semester === Number(semesterFilter) : true;
+    return matchesSearch && matchesSemester;
+  });
+
   if (loading) return <div className="container"><h3>Loading exams...</h3></div>;
   if (error) return <div className="container"><p className="error">{error}</p></div>;
 
@@ -62,6 +72,29 @@ function ExamsList() {
         <Link to="/admin/exams/new">
           <button style={{ backgroundColor: "#2ecc71", color: "#fff" }}>+ Add New Exam</button>
         </Link>
+      </div>
+
+      <div style={{ display: "flex", gap: "10px", margin: "15px 0" }}>
+        <input
+          type="text"
+          placeholder="Search exam by name..."
+          value={search}
+          onChange={(e) => setSearchParams({ search: e.target.value, semester: semesterFilter })}
+        />
+        <select
+          value={semesterFilter}
+          onChange={(e) => setSearchParams({ search, semester: e.target.value })}
+        >
+          <option value="">All Semesters</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+        </select>
       </div>
 
       {exams.length === 0 ? (
@@ -78,7 +111,7 @@ function ExamsList() {
             </tr>
           </thead>
           <tbody>
-            {exams.map((exam) => (
+            {filteredExams.map((exam) => (
               <tr key={exam._id}>
                 <td>{exam.name}</td>
                 <td>Sem {exam.semester}</td>
