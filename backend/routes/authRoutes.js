@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { auth, authorizeRoles } = require("../middleware/auth");
 
+// --- REGISTER (POST) ---
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role, rollNumber, semester } = req.body;
@@ -22,28 +23,36 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       role: role || "student",
       rollNumber: rollNumber || "",
-      semester: semester || 1
+      semester: semester ? Number(semester) : 1
     });
 
     await user.save();
-    res.json({ message: "User registered successfully" });
+
+    res.json({
+      message: "User registered successfully"
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+// --- LOGIN (POST) ---
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(401).json({
+        message: "User not found"
+      });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password" });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        message: "Invalid password"
+      });
     }
 
     const token = jwt.sign(
@@ -53,8 +62,10 @@ router.post("/login", async (req, res) => {
         name: user.name,
         semester: user.semester
       },
-      process.env.JWT_SECRET || "supersecretkey123",
-      { expiresIn: "1d" }
+      process.env.JWT_SECRET || "saif0@123",
+      {
+        expiresIn: "1d"
+      }
     );
 
     res.json({
@@ -74,6 +85,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// --- GET STUDENTS (ADMIN ONLY) ---
 router.get("/students", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     let query = { role: "student" };

@@ -4,6 +4,7 @@ const Result = require("../models/Result");
 const Exam = require("../models/Exam");
 const { auth, authorizeRoles } = require("../middleware/auth");
 
+// 1. Enter/Update marks for a student
 router.post("/marks", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     const { studentId, examId, marks } = req.body;
@@ -40,6 +41,7 @@ router.post("/marks", auth, authorizeRoles("admin"), async (req, res) => {
       isPass = false;
     }
 
+    // Auto grading
     let grade = "F";
     if (isPass) {
       if (percentage >= 90) grade = "A+";
@@ -80,6 +82,7 @@ router.post("/marks", auth, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// 2. Get results for an exam
 router.get("/exam/:examId", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     const results = await Result.find({ exam: req.params.examId }).populate("student", "name rollNumber");
@@ -89,6 +92,7 @@ router.get("/exam/:examId", auth, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// 3. Get student results (only published exams)
 router.get("/my-results", auth, async (req, res) => {
   try {
     const publishedExams = await Exam.find({ isPublished: true });
@@ -105,6 +109,7 @@ router.get("/my-results", auth, async (req, res) => {
   }
 });
 
+// 4. Admin dashboard statistics
 router.get("/dashboard", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     const results = await Result.find().populate("student", "name rollNumber");
@@ -122,6 +127,7 @@ router.get("/dashboard", auth, authorizeRoles("admin"), async (req, res) => {
     const passedCount = results.filter((r) => r.status === "Pass").length;
     const passPercentage = Number(((passedCount / totalResults) * 100).toFixed(2));
 
+    // Top students sorted by percentage
     const sorted = [...results].sort((a, b) => b.percentage - a.percentage);
     let rank = 1;
     const topStudents = sorted.slice(0, 5).map((r, i) => {
@@ -138,6 +144,7 @@ router.get("/dashboard", auth, authorizeRoles("admin"), async (req, res) => {
       };
     });
 
+    // Subject statistics
     const subjectMap = {};
     results.forEach((r) => {
       r.marks.forEach((m) => {
@@ -169,6 +176,7 @@ router.get("/dashboard", auth, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// 5. Get single result details for report card
 router.get("/:id", auth, async (req, res) => {
   try {
     let result = await Result.findById(req.params.id)

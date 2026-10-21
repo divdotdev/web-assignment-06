@@ -4,10 +4,15 @@ const Exam = require("../models/Exam");
 const Result = require("../models/Result");
 const { auth, authorizeRoles } = require("../middleware/auth");
 
+// Create new exam
 router.post("/", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     const { name, semester, subjects } = req.body;
-    const exam = new Exam({ name, semester, subjects });
+    const exam = new Exam({
+      name,
+      semester: Number(semester),
+      subjects
+    });
     await exam.save();
     res.json(exam);
   } catch (error) {
@@ -15,6 +20,7 @@ router.post("/", auth, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// Get all exams
 router.get("/", auth, async (req, res) => {
   try {
     const exams = await Exam.find();
@@ -24,6 +30,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// Get single exam by id
 router.get("/:id", auth, async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
@@ -36,6 +43,7 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+// Update exam
 router.put("/:id", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     const { name, semester, subjects } = req.body;
@@ -44,7 +52,7 @@ router.put("/:id", auth, authorizeRoles("admin"), async (req, res) => {
       return res.status(404).json({ message: "Exam not found" });
     }
     exam.name = name;
-    exam.semester = semester;
+    exam.semester = Number(semester);
     exam.subjects = subjects;
     await exam.save();
     res.json(exam);
@@ -53,6 +61,7 @@ router.put("/:id", auth, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// Delete exam
 router.delete("/:id", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     await Exam.findByIdAndDelete(req.params.id);
@@ -63,6 +72,7 @@ router.delete("/:id", auth, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// Toggle publish status
 router.patch("/:id/publish", auth, authorizeRoles("admin"), async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);

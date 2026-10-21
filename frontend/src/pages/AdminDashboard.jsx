@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "http://localhost:5001/api";
-
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const token = localStorage.getItem("token");
@@ -9,7 +7,7 @@ function AdminDashboard() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const res = await fetch(`${API_URL}/results/dashboard`, {
+        const res = await fetch("http://localhost:5001/api/results/dashboard", {
           headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
@@ -19,7 +17,7 @@ function AdminDashboard() {
       }
     }
     loadStats();
-  }, []);
+  }, [token]);
 
   if (!stats) return <div className="container"><h3>Loading dashboard...</h3></div>;
 
@@ -36,20 +34,20 @@ function AdminDashboard() {
     <div className="container">
       <h2>Examination Cell Dashboard</h2>
 
-      <div style={{ display: "flex", gap: "20px", marginTop: "15px" }}>
-        <div style={{ flex: 1, padding: "15px", border: "1px solid #ccc", background: "#fdfdfd" }}>
-          <h3>Total Results</h3>
-          <p style={{ fontSize: "24px", fontWeight: "bold", margin: 0 }}>{stats.totalResults}</p>
+      <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
+        <div style={{ flex: 1, padding: "20px", border: "1px solid #ddd", borderRadius: "6px", background: "#fdfdfd" }}>
+          <h3 style={{ margin: "0 0 10px 0" }}>Total Results Evaluated</h3>
+          <p style={{ fontSize: "28px", fontWeight: "bold", margin: 0, color: "#2c3e50" }}>{stats.totalResults}</p>
         </div>
-        <div style={{ flex: 1, padding: "15px", border: "1px solid #ccc", background: "#fdfdfd" }}>
-          <h3>Overall Pass %</h3>
-          <p style={{ fontSize: "24px", fontWeight: "bold", margin: 0, color: "#27ae60" }}>
+        <div style={{ flex: 1, padding: "20px", border: "1px solid #ddd", borderRadius: "6px", background: "#fdfdfd" }}>
+          <h3 style={{ margin: "0 0 10px 0" }}>Overall Pass Percentage</h3>
+          <p style={{ fontSize: "28px", fontWeight: "bold", margin: 0, color: "#27ae60" }}>
             {stats.passPercentage}%
           </p>
         </div>
       </div>
 
-      <h3 style={{ marginTop: "30px" }}>Top 5 Performing Students</h3>
+      <h3 style={{ marginTop: "35px" }}>Top 5 Performing Students</h3>
       <table>
         <thead>
           <tr>
@@ -79,7 +77,7 @@ function AdminDashboard() {
         </tbody>
       </table>
 
-      <h3 style={{ marginTop: "30px" }}>Subject-wise Performance</h3>
+      <h3 style={{ marginTop: "35px" }}>Subject-wise Performance</h3>
       <table>
         <thead>
           <tr>

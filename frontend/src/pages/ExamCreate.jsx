@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ExamForm from "../components/ExamForm";
 
-const API_URL = "http://localhost:5001/api";
-
 function ExamCreate() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -11,7 +9,7 @@ function ExamCreate() {
 
   const handleCreate = async (formData) => {
     try {
-      const res = await fetch(`${API_URL}/exams`, {
+      const res = await fetch("http://localhost:5001/api/exams", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +30,7 @@ function ExamCreate() {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: "600px" }}>
       <h2>Add New Exam</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <ExamForm onSubmit={handleCreate} buttonText="Create Exam" />

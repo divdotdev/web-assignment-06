@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5001/api";
-
 function ExamMarks() {
   const { id } = useParams();
   const [exam, setExam] = useState(null);
@@ -15,19 +13,22 @@ function ExamMarks() {
   useEffect(() => {
     async function loadData() {
       try {
-        const examRes = await fetch(`${API_URL}/exams/${id}`, {
+        const examRes = await fetch("http://localhost:5001/api/exams/" + id, {
           headers: { Authorization: "Bearer " + token }
         });
         const examData = await examRes.json();
         setExam(examData);
 
-        const studentsRes = await fetch(`${API_URL}/auth/students?semester=${examData.semester}`, {
-          headers: { Authorization: "Bearer " + token }
-        });
+        const studentsRes = await fetch(
+          "http://localhost:5001/api/auth/students?semester=" + examData.semester,
+          {
+            headers: { Authorization: "Bearer " + token }
+          }
+        );
         const studentsData = await studentsRes.json();
         setStudents(Array.isArray(studentsData) ? studentsData : []);
 
-        const resultsRes = await fetch(`${API_URL}/results/exam/${id}`, {
+        const resultsRes = await fetch("http://localhost:5001/api/results/exam/" + id, {
           headers: { Authorization: "Bearer " + token }
         });
         const resultsData = await resultsRes.json();
@@ -54,7 +55,7 @@ function ExamMarks() {
     }
 
     loadData();
-  }, [id]);
+  }, [id, token]);
 
   const handleMarkChange = (studentId, subjectName, val) => {
     setMarksState({
@@ -79,17 +80,17 @@ function ExamMarks() {
       const sub = exam.subjects[i];
       const val = Number(studentMarksObj[sub.subjectName]);
       if (isNaN(val) || val < 0) {
-        alert(`Marks for ${sub.subjectName} cannot be negative`);
+        alert("Marks for " + sub.subjectName + " cannot be negative");
         return;
       }
       if (val > sub.maxMarks) {
-        alert(`Marks for ${sub.subjectName} cannot exceed ${sub.maxMarks}`);
+        alert("Marks for " + sub.subjectName + " cannot exceed " + sub.maxMarks);
         return;
       }
     }
 
     try {
-      const res = await fetch(`${API_URL}/results/marks`, {
+      const res = await fetch("http://localhost:5001/api/results/marks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +114,7 @@ function ExamMarks() {
   if (!exam) return <div className="container"><h3>Loading exam...</h3></div>;
 
   return (
-    <div className="container" style={{ maxWidth: "1000px" }}>
+    <div className="container" style={{ maxWidth: "1050px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2>Enter Marks - {exam.name} (Semester {exam.semester})</h2>
         <Link to="/admin/exams">Back to Exams</Link>
@@ -160,7 +161,7 @@ function ExamMarks() {
                         type="number"
                         min="0"
                         max={sub.maxMarks}
-                        style={{ width: "65px" }}
+                        style={{ width: "65px", padding: "6px" }}
                         value={stMarks[sub.subjectName] !== undefined ? stMarks[sub.subjectName] : ""}
                         onChange={(e) =>
                           handleMarkChange(st._id, sub.subjectName, e.target.value)

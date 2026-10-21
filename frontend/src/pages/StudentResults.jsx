@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5001/api";
-
 function StudentResults() {
   const [results, setResults] = useState([]);
   const token = localStorage.getItem("token");
@@ -10,7 +8,7 @@ function StudentResults() {
   useEffect(() => {
     async function loadResults() {
       try {
-        const res = await fetch(`${API_URL}/results/my-results`, {
+        const res = await fetch("http://localhost:5001/api/results/my-results", {
           headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
@@ -22,7 +20,7 @@ function StudentResults() {
       }
     }
     loadResults();
-  }, []);
+  }, [token]);
 
   return (
     <div className="container">
@@ -34,9 +32,9 @@ function StudentResults() {
         <table>
           <thead>
             <tr>
-              <th>Exam</th>
+              <th>Exam Name</th>
               <th>Semester</th>
-              <th>Total Marks</th>
+              <th>Marks</th>
               <th>Percentage</th>
               <th>Grade</th>
               <th>Status</th>

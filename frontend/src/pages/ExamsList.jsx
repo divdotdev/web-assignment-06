@@ -1,36 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5001/api";
-
 function ExamsList() {
   const [exams, setExams] = useState([]);
   const [search, setSearch] = useState("");
-  const [semesterFilter, setSemesterFilter] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState("all");
   const token = localStorage.getItem("token");
 
-  const loadExams = async () => {
-    try {
-      const res = await fetch(`${API_URL}/exams`, {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setExams(data);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   useEffect(() => {
+    async function loadExams() {
+      try {
+        const res = await fetch("http://localhost:5001/api/exams", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setExams(data);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
     loadExams();
-  }, []);
+  }, [token]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this exam?")) return;
     try {
-      await fetch(`${API_URL}/exams/${id}`, {
+      await fetch(`http://localhost:5001/api/exams/${id}`, {
         method: "DELETE",
         headers: { Authorization: "Bearer " + token }
       });
@@ -42,15 +39,13 @@ function ExamsList() {
 
   const handleTogglePublish = async (id) => {
     try {
-      const res = await fetch(`${API_URL}/exams/${id}/publish`, {
+      const res = await fetch(`http://localhost:5001/api/exams/${id}/publish`, {
         method: "PATCH",
         headers: { Authorization: "Bearer " + token }
       });
       const data = await res.json();
-      if (data.exam) {
-        setExams(
-          exams.map((e) => (e._id === id ? { ...e, isPublished: data.exam.isPublished } : e))
-        );
+      if (data._id) {
+        setExams(exams.map((e) => (e._id === id ? data : e)));
       }
     } catch (err) {
       alert("Failed to update publish status");
@@ -59,7 +54,7 @@ function ExamsList() {
 
   const filteredExams = exams.filter((exam) => {
     const matchesSearch = exam.name.toLowerCase().includes(search.toLowerCase());
-    const matchesSemester = semesterFilter ? exam.semester === Number(semesterFilter) : true;
+    const matchesSemester = semesterFilter === "all" || exam.semester === Number(semesterFilter);
     return matchesSearch && matchesSemester;
   });
 
@@ -72,18 +67,20 @@ function ExamsList() {
         </Link>
       </div>
 
-      <div style={{ display: "flex", gap: "10px", margin: "15px 0" }}>
+      <div style={{ display: "flex", gap: "15px", margin: "20px 0" }}>
         <input
           type="text"
           placeholder="Search exam by name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          style={{ flex: 1 }}
         />
         <select
           value={semesterFilter}
           onChange={(e) => setSemesterFilter(e.target.value)}
+          style={{ width: "200px" }}
         >
-          <option value="">All Semesters</option>
+          <option value="all">All Semesters</option>
           <option value="1">Semester 1</option>
           <option value="2">Semester 2</option>
           <option value="3">Semester 3</option>
@@ -119,7 +116,7 @@ function ExamsList() {
                     {exam.isPublished ? "Published" : "Draft (Unpublished)"}
                   </span>
                 </td>
-                <td style={{ display: "flex", gap: "5px" }}>
+                <td style={{ display: "flex", gap: "8px" }}>
                   <button onClick={() => handleTogglePublish(exam._id)}>
                     {exam.isPublished ? "Unpublish" : "Publish"}
                   </button>

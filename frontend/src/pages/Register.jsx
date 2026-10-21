@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5001/api";
-
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,7 +16,7 @@ function Register() {
     setError("");
 
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
+      const res = await fetch("http://localhost:5001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -44,7 +42,7 @@ function Register() {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: "450px" }}>
       <h2>Register</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -53,9 +51,11 @@ function Register() {
           <label>Name: </label>
           <input
             type="text"
+            placeholder="Enter full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
 
@@ -63,9 +63,11 @@ function Register() {
           <label>Email: </label>
           <input
             type="email"
+            placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
 
@@ -73,15 +75,21 @@ function Register() {
           <label>Password: </label>
           <input
             type="password"
+            placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
 
         <div>
           <label>Role: </label>
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box" }}
+          >
             <option value="student">Student</option>
             <option value="admin">Exam Cell / Admin</option>
           </select>
@@ -93,9 +101,11 @@ function Register() {
               <label>Roll Number: </label>
               <input
                 type="text"
+                placeholder="e.g. 23CS01"
                 value={rollNumber}
                 onChange={(e) => setRollNumber(e.target.value)}
                 required
+                style={{ width: "100%", boxSizing: "border-box" }}
               />
             </div>
 
@@ -108,15 +118,18 @@ function Register() {
                 value={semester}
                 onChange={(e) => setSemester(e.target.value)}
                 required
+                style={{ width: "100%", boxSizing: "border-box" }}
               />
             </div>
           </>
         )}
 
-        <button type="submit">Register</button>
+        <button type="submit" style={{ backgroundColor: "#2ecc71", color: "#fff", marginTop: "10px" }}>
+          Register
+        </button>
       </form>
 
-      <p>
+      <p style={{ textAlign: "center", marginTop: "15px" }}>
         Already have an account? <Link to="/login">Login here</Link>
       </p>
     </div>

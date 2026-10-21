@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5001/api";
-
 function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +12,7 @@ function Login({ setUser }) {
     setError("");
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await fetch("http://localhost:5001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -39,7 +37,7 @@ function Login({ setUser }) {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: "450px" }}>
       <h2>Login</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
@@ -47,23 +45,29 @@ function Login({ setUser }) {
           <label>Email: </label>
           <input
             type="email"
+            placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
         <div>
           <label>Password: </label>
           <input
             type="password"
+            placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" style={{ backgroundColor: "#3498db", color: "#fff", marginTop: "10px" }}>
+          Login
+        </button>
       </form>
-      <p>
+      <p style={{ textAlign: "center", marginTop: "15px" }}>
         Don't have an account? <Link to="/register">Register here</Link>
       </p>
     </div>

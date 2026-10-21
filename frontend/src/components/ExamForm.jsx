@@ -45,7 +45,8 @@ function ExamForm({ initialData, onSubmit, buttonText }) {
       return;
     }
 
-    for (const sub of subjects) {
+    for (let i = 0; i < subjects.length; i++) {
+      const sub = subjects[i];
       if (!sub.subjectName.trim()) {
         setError("All subjects must have a name");
         return;
@@ -64,18 +65,19 @@ function ExamForm({ initialData, onSubmit, buttonText }) {
       {error && <div className="error">{error}</div>}
 
       <div>
-        <label>Exam Name:</label>
+        <label>Exam Name: </label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Mid-Sem Exam"
+          placeholder="e.g. End Semester Exam"
           required
+          style={{ width: "100%", boxSizing: "border-box" }}
         />
       </div>
 
       <div>
-        <label>Semester:</label>
+        <label>Semester: </label>
         <input
           type="number"
           min="1"
@@ -83,10 +85,11 @@ function ExamForm({ initialData, onSubmit, buttonText }) {
           value={semester}
           onChange={(e) => setSemester(e.target.value)}
           required
+          style={{ width: "100%", boxSizing: "border-box" }}
         />
       </div>
 
-      <h4>Subjects</h4>
+      <h4 style={{ marginBottom: "5px" }}>Subjects</h4>
       {subjects.map((sub, index) => (
         <div key={index} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
@@ -95,6 +98,7 @@ function ExamForm({ initialData, onSubmit, buttonText }) {
             value={sub.subjectName}
             onChange={(e) => handleSubjectChange(index, "subjectName", e.target.value)}
             required
+            style={{ flex: 2 }}
           />
           <input
             type="number"
@@ -102,6 +106,7 @@ function ExamForm({ initialData, onSubmit, buttonText }) {
             value={sub.maxMarks}
             onChange={(e) => handleSubjectChange(index, "maxMarks", e.target.value)}
             required
+            style={{ flex: 1 }}
           />
           <input
             type="number"
@@ -109,14 +114,15 @@ function ExamForm({ initialData, onSubmit, buttonText }) {
             value={sub.passMarks}
             onChange={(e) => handleSubjectChange(index, "passMarks", e.target.value)}
             required
+            style={{ flex: 1 }}
           />
-          <button type="button" onClick={() => removeSubjectRow(index)}>
+          <button type="button" onClick={() => removeSubjectRow(index)} style={{ backgroundColor: "#e74c3c", color: "#fff" }}>
             Remove
           </button>
         </div>
       ))}
 
-      <button type="button" onClick={addSubjectRow}>
+      <button type="button" onClick={addSubjectRow} style={{ alignSelf: "flex-start", marginTop: "5px" }}>
         + Add Another Subject
       </button>
 

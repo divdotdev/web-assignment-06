@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5001/api";
-
 function ReportCard() {
   const { id } = useParams();
   const [result, setResult] = useState(null);
@@ -11,7 +9,7 @@ function ReportCard() {
   useEffect(() => {
     async function getReport() {
       try {
-        const res = await fetch(`${API_URL}/results/${id}`, {
+        const res = await fetch("http://localhost:5001/api/results/" + id, {
           headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
@@ -23,7 +21,7 @@ function ReportCard() {
       }
     }
     getReport();
-  }, [id]);
+  }, [id, token]);
 
   if (!result) return <div className="container"><h3>Loading report card...</h3></div>;
 
@@ -35,10 +33,12 @@ function ReportCard() {
   }
 
   return (
-    <div className="container" style={{ border: "2px solid #333", padding: "30px" }}>
+    <div className="container" style={{ border: "2px solid #333", padding: "30px", maxWidth: "800px" }}>
       <div style={{ textAlign: "center", borderBottom: "2px solid #333", paddingBottom: "15px" }}>
         <h1 style={{ margin: 0 }}>STUDENT REPORT CARD</h1>
-        <h3 style={{ margin: "5px 0" }}>{result.exam ? result.exam.name : "Semester Examination"}</h3>
+        <h3 style={{ margin: "5px 0", color: "#555" }}>
+          {result.exam ? result.exam.name : "Semester Examination"}
+        </h3>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", margin: "20px 0" }}>
@@ -48,7 +48,8 @@ function ReportCard() {
         </div>
         <div>
           <p><strong>Semester:</strong> {result.student ? result.student.semester : "N/A"}</p>
-          <p><strong>Status:</strong>{" "}
+          <p>
+            <strong>Status:</strong>{" "}
             <span className={result.status === "Pass" ? "badge-pass" : "badge-fail"}>
               {result.status}
             </span>
@@ -90,14 +91,15 @@ function ReportCard() {
         </tbody>
       </table>
 
-      <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between", background: "#f2f2f2", padding: "15px" }}>
+      <div style={{ marginTop: "25px", display: "flex", justifyContent: "space-between", background: "#f2f2f2", padding: "15px", borderRadius: "4px" }}>
         <div>
-          <p style={{ margin: "4px 0" }}><strong>Total Marks:</strong> {result.totalMarks} / {result.maxTotalMarks}</p>
-          <p style={{ margin: "4px 0" }}><strong>Percentage:</strong> {result.percentage}%</p>
+          <p style={{ margin: "5px 0" }}><strong>Total Marks:</strong> {result.totalMarks} / {result.maxTotalMarks}</p>
+          <p style={{ margin: "5px 0" }}><strong>Percentage:</strong> {result.percentage}%</p>
         </div>
         <div>
-          <p style={{ margin: "4px 0" }}><strong>Final Grade:</strong> {result.grade}</p>
-          <p style={{ margin: "4px 0" }}><strong>Final Result:</strong>{" "}
+          <p style={{ margin: "5px 0" }}><strong>Final Grade:</strong> {result.grade}</p>
+          <p style={{ margin: "5px 0" }}>
+            <strong>Final Result:</strong>{" "}
             <span className={result.status === "Pass" ? "badge-pass" : "badge-fail"}>
               {result.status}
             </span>

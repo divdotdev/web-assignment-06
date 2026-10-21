@@ -19,7 +19,7 @@ function Navbar({ user, setUser }) {
             <>
               <Link to="/admin/dashboard">Dashboard</Link>
               <Link to="/admin/exams">Manage Exams</Link>
-              <Link to="/admin/exams/new">Add Exam</Link>
+              <Link to="/admin/exams/new">+ Add Exam</Link>
             </>
           )}
 
@@ -29,7 +29,7 @@ function Navbar({ user, setUser }) {
             </>
           )}
 
-          <span style={{ color: "#aaa", fontSize: "14px" }}>
+          <span style={{ color: "#bdc3c7", fontSize: "14px", marginLeft: "10px" }}>
             {user.name} ({user.role})
           </span>
 
