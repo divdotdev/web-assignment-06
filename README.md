@@ -49,10 +49,6 @@ web-assignment-06/
 ├── backend/
 │   ├── config/
 │   │   └── db.js
-│   ├── controllers/
-│   │   ├── authController.js
-│   │   ├── examController.js
-│   │   └── resultController.js
 │   ├── middleware/
 │   │   └── auth.js
 │   ├── models/
@@ -68,11 +64,9 @@ web-assignment-06/
 │   ├── seed.js
 │   └── server.js
 └── frontend/
+    ├── public/
+    │   └── _redirects
     ├── src/
-    │   ├── api/
-    │   │   ├── authApi.js
-    │   │   ├── examApi.js
-    │   │   └── resultApi.js
     │   ├── components/
     │   │   ├── ExamForm.jsx
     │   │   ├── Navbar.jsx
