@@ -24,11 +24,6 @@ app.get("/", (req, res) => {
   res.json({ message: "Exam Result & Report Card API is running" });
 });
 
-app.use((err, req, res, next) => {
-  const statusCode = err.status || 500;
-  res.status(statusCode).json({ message: err.message || "Server Error" });
-});
-
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {

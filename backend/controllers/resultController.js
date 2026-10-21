@@ -1,16 +1,6 @@
 const Result = require("../models/Result");
 const Exam = require("../models/Exam");
 
-const calculateGrade = (percentage, isPass) => {
-  if (!isPass) return "F";
-  if (percentage >= 90) return "A+";
-  if (percentage >= 80) return "A";
-  if (percentage >= 70) return "B";
-  if (percentage >= 60) return "C";
-  if (percentage >= 50) return "D";
-  return "F";
-};
-
 const saveMarks = async (req, res) => {
   try {
     const { studentId, examId, marks } = req.body;
@@ -24,21 +14,15 @@ const saveMarks = async (req, res) => {
     let maxTotalMarks = 0;
     let isPass = true;
 
-    for (const sub of exam.subjects) {
+    for (let i = 0; i < exam.subjects.length; i++) {
+      const sub = exam.subjects[i];
       maxTotalMarks += sub.maxMarks;
+
       const entry = marks.find((m) => m.subjectName === sub.subjectName);
+      const score = entry ? Number(entry.marksObtained) : 0;
 
-      if (!entry) {
-        return res.status(400).json({ message: `Missing marks for ${sub.subjectName}` });
-      }
-
-      const score = Number(entry.marksObtained);
-      if (isNaN(score) || score < 0) {
-        return res.status(400).json({ message: `Marks for ${sub.subjectName} cannot be negative` });
-      }
-
-      if (score > sub.maxMarks) {
-        return res.status(400).json({ message: `Marks for ${sub.subjectName} cannot exceed ${sub.maxMarks}` });
+      if (score < 0 || score > sub.maxMarks) {
+        return res.status(400).json({ message: `Invalid marks for ${sub.subjectName}` });
       }
 
       if (score < sub.passMarks) {
@@ -53,11 +37,18 @@ const saveMarks = async (req, res) => {
       isPass = false;
     }
 
+    let grade = "F";
+    if (isPass) {
+      if (percentage >= 90) grade = "A+";
+      else if (percentage >= 80) grade = "A";
+      else if (percentage >= 70) grade = "B";
+      else if (percentage >= 60) grade = "C";
+      else if (percentage >= 50) grade = "D";
+    }
+
     const status = isPass ? "Pass" : "Fail";
-    const grade = calculateGrade(percentage, isPass);
 
     let result = await Result.findOne({ student: studentId, exam: examId });
-
     if (result) {
       result.marks = marks;
       result.totalMarks = totalMarks;
@@ -80,7 +71,7 @@ const saveMarks = async (req, res) => {
       await result.save();
     }
 
-    res.status(200).json({ message: "Marks saved successfully", result });
+    res.json({ message: "Marks saved successfully", result });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -88,8 +79,8 @@ const saveMarks = async (req, res) => {
 
 const getResultsByExam = async (req, res) => {
   try {
-    const results = await Result.find({ exam: req.params.examId }).populate("student", "name rollNumber email semester");
-    res.status(200).json(results);
+    const results = await Result.find({ exam: req.params.examId }).populate("student", "name rollNumber");
+    res.json(results);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -97,7 +88,7 @@ const getResultsByExam = async (req, res) => {
 
 const getMyResults = async (req, res) => {
   try {
-    const publishedExams = await Exam.find({ isPublished: true }).select("_id");
+    const publishedExams = await Exam.find({ isPublished: true });
     const examIds = publishedExams.map((e) => e._id);
 
     const results = await Result.find({
@@ -105,7 +96,7 @@ const getMyResults = async (req, res) => {
       exam: { $in: examIds }
     }).populate("exam");
 
-    res.status(200).json(results);
+    res.json(results);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -118,10 +109,7 @@ const getResultById = async (req, res) => {
       .populate("exam");
 
     if (!result) {
-      result = await Result.findOne({
-        exam: req.params.id,
-        ...(req.user.role === "student" ? { student: req.user.userId } : {})
-      })
+      result = await Result.findOne({ exam: req.params.id, student: req.user.userId })
         .populate("student", "name rollNumber email semester")
         .populate("exam");
     }
@@ -130,16 +118,7 @@ const getResultById = async (req, res) => {
       return res.status(404).json({ message: "Result not found" });
     }
 
-    if (req.user.role === "student") {
-      if (result.student._id.toString() !== req.user.userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      if (!result.exam.isPublished) {
-        return res.status(403).json({ message: "Result is not published yet" });
-      }
-    }
-
-    res.status(200).json(result);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -151,7 +130,7 @@ const getDashboardStats = async (req, res) => {
     const totalResults = results.length;
 
     if (totalResults === 0) {
-      return res.status(200).json({
+      return res.json({
         totalResults: 0,
         passPercentage: 0,
         topStudents: [],
@@ -162,14 +141,14 @@ const getDashboardStats = async (req, res) => {
     const passedCount = results.filter((r) => r.status === "Pass").length;
     const passPercentage = Number(((passedCount / totalResults) * 100).toFixed(2));
 
-    const sortedResults = [...results].sort((a, b) => b.percentage - a.percentage);
-    let currentRank = 1;
-    const topStudents = sortedResults.slice(0, 5).map((r, i) => {
-      if (i > 0 && r.percentage < sortedResults[i - 1].percentage) {
-        currentRank = i + 1;
+    const sorted = [...results].sort((a, b) => b.percentage - a.percentage);
+    let rank = 1;
+    const topStudents = sorted.slice(0, 5).map((r, i) => {
+      if (i > 0 && r.percentage < sorted[i - 1].percentage) {
+        rank = i + 1;
       }
       return {
-        rank: currentRank,
+        rank: rank,
         name: r.student ? r.student.name : "N/A",
         rollNumber: r.student ? r.student.rollNumber : "N/A",
         percentage: r.percentage,
@@ -198,7 +177,7 @@ const getDashboardStats = async (req, res) => {
       highest: subjectMap[name].highest
     }));
 
-    res.status(200).json({
+    res.json({
       totalResults,
       passPercentage,
       topStudents,

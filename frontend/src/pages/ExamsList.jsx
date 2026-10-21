@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { fetchExams, deleteExam, togglePublishExam } from "../api/examApi";
 
 function ExamsList() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState("");
   const token = localStorage.getItem("token");
-
-  const search = searchParams.get("search") || "";
-  const semesterFilter = searchParams.get("semester") || "";
 
   const loadExams = async () => {
     setLoading(true);
@@ -79,11 +77,11 @@ function ExamsList() {
           type="text"
           placeholder="Search exam by name..."
           value={search}
-          onChange={(e) => setSearchParams({ search: e.target.value, semester: semesterFilter })}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <select
           value={semesterFilter}
-          onChange={(e) => setSearchParams({ search, semester: e.target.value })}
+          onChange={(e) => setSemesterFilter(e.target.value)}
         >
           <option value="">All Semesters</option>
           <option value="1">Semester 1</option>

@@ -6,13 +6,9 @@ const register = async (req, res) => {
   try {
     const { name, email, password, role, rollNumber, semester } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please fill all required fields" });
-    }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ message: "Email already registered" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -27,8 +23,7 @@ const register = async (req, res) => {
     });
 
     await user.save();
-
-    res.status(201).json({ message: "User registered successfully" });
+    res.json({ message: "User registered successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -40,12 +35,12 @@ const login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     const token = jwt.sign(
@@ -59,7 +54,7 @@ const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(200).json({
+    res.json({
       message: "Login successful",
       token,
       user: {
@@ -78,12 +73,12 @@ const login = async (req, res) => {
 
 const getStudents = async (req, res) => {
   try {
-    const query = { role: "student" };
+    let query = { role: "student" };
     if (req.query.semester) {
       query.semester = Number(req.query.semester);
     }
-    const students = await User.find(query).select("-password");
-    res.status(200).json(students);
+    const students = await User.find(query);
+    res.json(students);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

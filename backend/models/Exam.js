@@ -1,22 +1,5 @@
 const mongoose = require("mongoose");
 
-const subjectSchema = new mongoose.Schema({
-  subjectName: {
-    type: String,
-    required: true
-  },
-  maxMarks: {
-    type: Number,
-    required: true,
-    default: 100
-  },
-  passMarks: {
-    type: Number,
-    required: true,
-    default: 40
-  }
-});
-
 const examSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -26,7 +9,13 @@ const examSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  subjects: [subjectSchema],
+  subjects: [
+    {
+      subjectName: String,
+      maxMarks: Number,
+      passMarks: Number
+    }
+  ],
   isPublished: {
     type: Boolean,
     default: false

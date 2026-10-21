@@ -21,12 +21,10 @@ function ExamMarks() {
         const examData = await fetchExamById(id, token);
         setExam(examData);
 
-        const [studentsData, resultsData] = await Promise.all([
-          getStudentsList(examData.semester, token),
-          fetchResultsByExam(id, token)
-        ]);
-
+        const studentsData = await getStudentsList(examData.semester, token);
         setStudents(Array.isArray(studentsData) ? studentsData : []);
+
+        const resultsData = await fetchResultsByExam(id, token);
 
         const initialMarks = {};
         const resultMap = {};
