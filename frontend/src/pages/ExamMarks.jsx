@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fetchExamById } from "../api/examApi";
-import { getStudentsList } from "../api/authApi";
-import { fetchResultsByExam, saveExamMarks } from "../api/resultApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function ExamMarks() {
   const { id } = useParams();
@@ -18,13 +17,23 @@ function ExamMarks() {
     const init = async () => {
       try {
         setLoading(true);
-        const examData = await fetchExamById(id, token);
+
+        const examRes = await fetch(`${API_URL}/exams/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const examData = await examRes.json();
         setExam(examData);
 
-        const studentsData = await getStudentsList(examData.semester, token);
+        const studentsRes = await fetch(`${API_URL}/auth/students?semester=${examData.semester}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const studentsData = await studentsRes.json();
         setStudents(Array.isArray(studentsData) ? studentsData : []);
 
-        const resultsData = await fetchResultsByExam(id, token);
+        const resultsRes = await fetch(`${API_URL}/results/exam/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const resultsData = await resultsRes.json();
 
         const initialMarks = {};
         const resultMap = {};
@@ -84,16 +93,21 @@ function ExamMarks() {
     }
 
     try {
-      const res = await saveExamMarks(
-        { studentId, examId: id, marks: formattedMarks },
-        token
-      );
+      const res = await fetch(`${API_URL}/results/marks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ studentId, examId: id, marks: formattedMarks })
+      });
+      const data = await res.json();
 
-      if (res.result) {
-        setResultsMap((prev) => ({ ...prev, [studentId]: res.result }));
+      if (data.result) {
+        setResultsMap((prev) => ({ ...prev, [studentId]: data.result }));
         setMsg({ text: "Marks saved and result calculated successfully!", type: "success" });
       } else {
-        setMsg({ text: res.message || "Failed to save marks", type: "error" });
+        setMsg({ text: data.message || "Failed to save marks", type: "error" });
       }
     } catch (err) {
       setMsg({ text: "Network error while saving marks", type: "error" });

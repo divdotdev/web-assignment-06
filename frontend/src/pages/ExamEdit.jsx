@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ExamForm from "../components/ExamForm";
-import { fetchExamById, updateExam } from "../api/examApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function ExamEdit() {
   const { id } = useParams();
@@ -14,7 +15,11 @@ function ExamEdit() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchExamById(id, token);
+        const res = await fetch(`${API_URL}/exams/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
         if (data._id) {
           setExam(data);
         } else {
@@ -31,11 +36,20 @@ function ExamEdit() {
 
   const handleUpdate = async (formData) => {
     try {
-      const res = await updateExam(id, formData, token);
-      if (res._id) {
+      const res = await fetch(`${API_URL}/exams/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+
+      if (data._id) {
         navigate("/admin/exams");
       } else {
-        setError(res.message || "Failed to update exam");
+        setError(data.message || "Failed to update exam");
       }
     } catch (err) {
       setError("Network error");

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ExamForm from "../components/ExamForm";
-import { createExam } from "../api/examApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function ExamCreate() {
   const [serverError, setServerError] = useState("");
@@ -10,11 +11,20 @@ function ExamCreate() {
 
   const handleCreate = async (formData) => {
     try {
-      const res = await createExam(formData, token);
-      if (res._id) {
+      const res = await fetch(`${API_URL}/exams`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+
+      if (data._id) {
         navigate("/admin/exams");
       } else {
-        setServerError(res.message || "Failed to create exam");
+        setServerError(data.message || "Failed to create exam");
       }
     } catch (err) {
       setServerError("Network error");

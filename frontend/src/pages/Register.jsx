@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { registerUser } from "../api/authApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function Register() {
   const [name, setName] = useState("");
@@ -21,14 +22,19 @@ function Register() {
     setLoading(true);
 
     try {
-      const data = await registerUser({
-        name,
-        email,
-        password,
-        role,
-        rollNumber: role === "student" ? rollNumber : "",
-        semester: role === "student" ? Number(semester) : 1
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+          rollNumber: role === "student" ? rollNumber : "",
+          semester: role === "student" ? Number(semester) : 1
+        })
       });
+      const data = await res.json();
 
       if (data.message === "User registered successfully") {
         setSuccess("Registration successful! Redirecting to login...");

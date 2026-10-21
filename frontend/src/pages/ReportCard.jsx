@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fetchResultById } from "../api/resultApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function ReportCard() {
   const { id } = useParams();
@@ -13,7 +14,11 @@ function ReportCard() {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await fetchResultById(id, token);
+        const res = await fetch(`${API_URL}/results/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
         if (data._id) {
           setResult(data);
         } else {

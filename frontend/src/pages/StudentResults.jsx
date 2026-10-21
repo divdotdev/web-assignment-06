@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchMyResults } from "../api/resultApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function StudentResults() {
   const [results, setResults] = useState([]);
@@ -12,7 +13,11 @@ function StudentResults() {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await fetchMyResults(token);
+        const res = await fetch(`${API_URL}/results/my-results`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
         if (Array.isArray(data)) {
           setResults(data);
         } else {

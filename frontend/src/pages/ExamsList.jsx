@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchExams, deleteExam, togglePublishExam } from "../api/examApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function ExamsList() {
   const [exams, setExams] = useState([]);
@@ -14,7 +15,11 @@ function ExamsList() {
     setLoading(true);
     setError("");
     try {
-      const data = await fetchExams(token);
+      const res = await fetch(`${API_URL}/exams`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+
       if (Array.isArray(data)) {
         setExams(data);
       } else {
@@ -34,7 +39,10 @@ function ExamsList() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this exam?")) return;
     try {
-      await deleteExam(id, token);
+      await fetch(`${API_URL}/exams/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setExams(exams.filter((exam) => exam._id !== id));
     } catch (err) {
       alert("Failed to delete exam");
@@ -43,10 +51,15 @@ function ExamsList() {
 
   const handleTogglePublish = async (id) => {
     try {
-      const res = await togglePublishExam(id, token);
-      if (res.exam) {
+      const res = await fetch(`${API_URL}/exams/${id}/publish`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      if (data.exam) {
         setExams(
-          exams.map((e) => (e._id === id ? { ...e, isPublished: res.exam.isPublished } : e))
+          exams.map((e) => (e._id === id ? { ...e, isPublished: data.exam.isPublished } : e))
         );
       }
     } catch (err) {

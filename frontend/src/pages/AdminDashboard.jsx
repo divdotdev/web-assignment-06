@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { fetchDashboardStats } from "../api/resultApi";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -11,7 +12,10 @@ function AdminDashboard() {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await fetchDashboardStats(token);
+        const res = await fetch(`${API_URL}/results/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
         setStats(data);
       } catch (err) {
         setError("Failed to load dashboard statistics");
