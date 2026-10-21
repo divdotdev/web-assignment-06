@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function Register() {
   const [name, setName] = useState("");
@@ -11,15 +11,11 @@ function Register() {
   const [rollNumber, setRollNumber] = useState("");
   const [semester, setSemester] = useState(1);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
-    setLoading(true);
 
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
@@ -37,27 +33,24 @@ function Register() {
       const data = await res.json();
 
       if (data.message === "User registered successfully") {
-        setSuccess("Registration successful! Redirecting to login...");
-        setTimeout(() => navigate("/login"), 1500);
+        alert("Registration successful! Please login.");
+        navigate("/login");
       } else {
         setError(data.message || "Registration failed");
       }
     } catch (err) {
-      setError("Network error");
-    } finally {
-      setLoading(false);
+      setError("Server error");
     }
   };
 
   return (
     <div className="container">
       <h2>Register</h2>
-      {error && <div className="error">{error}</div>}
-      {success && <div className="success">{success}</div>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Name:</label>
+          <label>Name: </label>
           <input
             type="text"
             value={name}
@@ -67,7 +60,7 @@ function Register() {
         </div>
 
         <div>
-          <label>Email:</label>
+          <label>Email: </label>
           <input
             type="email"
             value={email}
@@ -77,7 +70,7 @@ function Register() {
         </div>
 
         <div>
-          <label>Password:</label>
+          <label>Password: </label>
           <input
             type="password"
             value={password}
@@ -87,7 +80,7 @@ function Register() {
         </div>
 
         <div>
-          <label>Role:</label>
+          <label>Role: </label>
           <select value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="student">Student</option>
             <option value="admin">Exam Cell / Admin</option>
@@ -97,7 +90,7 @@ function Register() {
         {role === "student" && (
           <>
             <div>
-              <label>Roll Number:</label>
+              <label>Roll Number: </label>
               <input
                 type="text"
                 value={rollNumber}
@@ -107,7 +100,7 @@ function Register() {
             </div>
 
             <div>
-              <label>Semester:</label>
+              <label>Semester: </label>
               <input
                 type="number"
                 min="1"
@@ -120,9 +113,7 @@ function Register() {
           </>
         )}
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
-        </button>
+        <button type="submit">Register</button>
       </form>
 
       <p>

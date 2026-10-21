@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function ExamMarks() {
   const { id } = useParams();
@@ -9,29 +9,26 @@ function ExamMarks() {
   const [students, setStudents] = useState([]);
   const [marksState, setMarksState] = useState({});
   const [resultsMap, setResultsMap] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [msg, setMsg] = useState({ text: "", type: "" });
+  const [msg, setMsg] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const init = async () => {
+    async function loadData() {
       try {
-        setLoading(true);
-
         const examRes = await fetch(`${API_URL}/exams/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: "Bearer " + token }
         });
         const examData = await examRes.json();
         setExam(examData);
 
         const studentsRes = await fetch(`${API_URL}/auth/students?semester=${examData.semester}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: "Bearer " + token }
         });
         const studentsData = await studentsRes.json();
         setStudents(Array.isArray(studentsData) ? studentsData : []);
 
         const resultsRes = await fetch(`${API_URL}/results/exam/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: "Bearer " + token }
         });
         const resultsData = await resultsRes.json();
 
@@ -52,27 +49,25 @@ function ExamMarks() {
         setMarksState(initialMarks);
         setResultsMap(resultMap);
       } catch (err) {
-        setMsg({ text: "Failed to load exam data", type: "error" });
-      } finally {
-        setLoading(false);
+        console.log(err);
       }
-    };
+    }
 
-    init();
+    loadData();
   }, [id]);
 
   const handleMarkChange = (studentId, subjectName, val) => {
-    setMarksState((prev) => ({
-      ...prev,
+    setMarksState({
+      ...marksState,
       [studentId]: {
-        ...prev[studentId],
+        ...(marksState[studentId] || {}),
         [subjectName]: val
       }
-    }));
+    });
   };
 
   const handleSaveStudentMarks = async (studentId) => {
-    setMsg({ text: "", type: "" });
+    setMsg("");
     const studentMarksObj = marksState[studentId] || {};
 
     const formattedMarks = exam.subjects.map((sub) => ({
@@ -80,14 +75,15 @@ function ExamMarks() {
       marksObtained: Number(studentMarksObj[sub.subjectName] || 0)
     }));
 
-    for (const sub of exam.subjects) {
+    for (let i = 0; i < exam.subjects.length; i++) {
+      const sub = exam.subjects[i];
       const val = Number(studentMarksObj[sub.subjectName]);
-      if (val === undefined || isNaN(val) || val < 0) {
-        setMsg({ text: `Marks for ${sub.subjectName} cannot be negative`, type: "error" });
+      if (isNaN(val) || val < 0) {
+        alert(`Marks for ${sub.subjectName} cannot be negative`);
         return;
       }
       if (val > sub.maxMarks) {
-        setMsg({ text: `Marks for ${sub.subjectName} cannot exceed max marks (${sub.maxMarks})`, type: "error" });
+        alert(`Marks for ${sub.subjectName} cannot exceed ${sub.maxMarks}`);
         return;
       }
     }
@@ -97,25 +93,24 @@ function ExamMarks() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: "Bearer " + token
         },
         body: JSON.stringify({ studentId, examId: id, marks: formattedMarks })
       });
       const data = await res.json();
 
       if (data.result) {
-        setResultsMap((prev) => ({ ...prev, [studentId]: data.result }));
-        setMsg({ text: "Marks saved and result calculated successfully!", type: "success" });
+        setResultsMap({ ...resultsMap, [studentId]: data.result });
+        setMsg("Marks saved successfully!");
       } else {
-        setMsg({ text: data.message || "Failed to save marks", type: "error" });
+        alert(data.message || "Failed to save marks");
       }
     } catch (err) {
-      setMsg({ text: "Network error while saving marks", type: "error" });
+      alert("Error saving marks");
     }
   };
 
-  if (loading) return <div className="container"><h3>Loading students & marks...</h3></div>;
-  if (!exam) return <div className="container"><p className="error">Exam not found</p></div>;
+  if (!exam) return <div className="container"><h3>Loading exam...</h3></div>;
 
   return (
     <div className="container" style={{ maxWidth: "1000px" }}>
@@ -124,11 +119,7 @@ function ExamMarks() {
         <Link to="/admin/exams">Back to Exams</Link>
       </div>
 
-      {msg.text && (
-        <div className={msg.type === "error" ? "error" : "success"}>
-          {msg.text}
-        </div>
-      )}
+      {msg && <p style={{ color: "green" }}>{msg}</p>}
 
       {students.length === 0 ? (
         <p>No students enrolled in Semester {exam.semester}.</p>
@@ -139,10 +130,10 @@ function ExamMarks() {
               <th>Roll No</th>
               <th>Student Name</th>
               {exam.subjects.map((s) => (
-                <th key={s._id || s.subjectName}>
+                <th key={s.subjectName}>
                   {s.subjectName}
                   <br />
-                  <small style={{ fontWeight: "normal" }}>
+                  <small>
                     (Max: {s.maxMarks}, Pass: {s.passMarks})
                   </small>
                 </th>

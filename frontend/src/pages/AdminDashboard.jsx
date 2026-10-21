@@ -1,34 +1,29 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const load = async () => {
+    async function loadStats() {
       try {
-        setLoading(true);
         const res = await fetch(`${API_URL}/results/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
         setStats(data);
       } catch (err) {
-        setError("Failed to load dashboard statistics");
-      } finally {
-        setLoading(false);
+        console.log(err);
       }
-    };
-    load();
+    }
+    loadStats();
   }, []);
 
-  if (loading) return <div className="container"><h3>Loading dashboard...</h3></div>;
-  if (error) return <div className="container"><p className="error">{error}</p></div>;
-  if (!stats || stats.totalResults === 0) {
+  if (!stats) return <div className="container"><h3>Loading dashboard...</h3></div>;
+
+  if (stats.totalResults === 0) {
     return (
       <div className="container">
         <h2>Admin Dashboard</h2>

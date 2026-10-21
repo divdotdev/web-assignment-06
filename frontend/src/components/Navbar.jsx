@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Navbar({ user, setUser }) {
   const navigate = useNavigate();
@@ -17,15 +17,15 @@ function Navbar({ user, setUser }) {
         <>
           {user.role === "admin" && (
             <>
-              <NavLink to="/admin/dashboard">Dashboard</NavLink>
-              <NavLink to="/admin/exams">Manage Exams</NavLink>
-              <NavLink to="/admin/exams/new">Add Exam</NavLink>
+              <Link to="/admin/dashboard">Dashboard</Link>
+              <Link to="/admin/exams">Manage Exams</Link>
+              <Link to="/admin/exams/new">Add Exam</Link>
             </>
           )}
 
           {user.role === "student" && (
             <>
-              <NavLink to="/results">My Results</NavLink>
+              <Link to="/results">My Results</Link>
             </>
           )}
 
@@ -37,8 +37,8 @@ function Navbar({ user, setUser }) {
         </>
       ) : (
         <>
-          <NavLink to="/login">Login</NavLink>
-          <NavLink to="/register">Register</NavLink>
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
         </>
       )}
     </nav>

@@ -1,19 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
@@ -36,19 +34,17 @@ function Login({ setUser }) {
         setError(data.message || "Login failed");
       }
     } catch (err) {
-      setError("Network error");
-    } finally {
-      setLoading(false);
+      setError("Server error");
     }
   };
 
   return (
     <div className="container">
       <h2>Login</h2>
-      {error && <div className="error">{error}</div>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email:</label>
+          <label>Email: </label>
           <input
             type="email"
             value={email}
@@ -57,7 +53,7 @@ function Login({ setUser }) {
           />
         </div>
         <div>
-          <label>Password:</label>
+          <label>Password: </label>
           <input
             type="password"
             value={password}
@@ -65,9 +61,7 @@ function Login({ setUser }) {
             required
           />
         </div>
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
+        <button type="submit">Login</button>
       </form>
       <p>
         Don't have an account? <Link to="/register">Register here</Link>

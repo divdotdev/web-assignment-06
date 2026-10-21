@@ -1,39 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function StudentResults() {
   const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const load = async () => {
+    async function loadResults() {
       try {
-        setLoading(true);
         const res = await fetch(`${API_URL}/results/my-results`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
-
         if (Array.isArray(data)) {
           setResults(data);
-        } else {
-          setError(data.message || "Failed to load results");
         }
       } catch (err) {
-        setError("Network error");
-      } finally {
-        setLoading(false);
+        console.log(err);
       }
-    };
-    load();
+    }
+    loadResults();
   }, []);
-
-  if (loading) return <div className="container"><h3>Loading your results...</h3></div>;
-  if (error) return <div className="container"><p className="error">{error}</p></div>;
 
   return (
     <div className="container">

@@ -1,41 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function ReportCard() {
   const { id } = useParams();
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const load = async () => {
+    async function getReport() {
       try {
-        setLoading(true);
         const res = await fetch(`${API_URL}/results/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
-
         if (data._id) {
           setResult(data);
-        } else {
-          setError(data.message || "Failed to load report card");
         }
       } catch (err) {
-        setError("Network error");
-      } finally {
-        setLoading(false);
+        console.log(err);
       }
-    };
-    load();
+    }
+    getReport();
   }, [id]);
 
-  if (loading) return <div className="container"><h3>Loading report card...</h3></div>;
-  if (error) return <div className="container"><p className="error">{error}</p></div>;
-  if (!result) return <div className="container"><p className="error">Result not found</p></div>;
+  if (!result) return <div className="container"><h3>Loading report card...</h3></div>;
 
   const subjectMap = {};
   if (result.exam && result.exam.subjects) {

@@ -1,34 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = "http://localhost:5001/api";
 
 function ExamsList() {
   const [exams, setExams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [semesterFilter, setSemesterFilter] = useState("");
   const token = localStorage.getItem("token");
 
   const loadExams = async () => {
-    setLoading(true);
-    setError("");
     try {
       const res = await fetch(`${API_URL}/exams`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: "Bearer " + token }
       });
       const data = await res.json();
-
       if (Array.isArray(data)) {
         setExams(data);
-      } else {
-        setError(data.message || "Failed to load exams");
       }
     } catch (err) {
-      setError("Network error");
-    } finally {
-      setLoading(false);
+      console.log(err);
     }
   };
 
@@ -41,7 +32,7 @@ function ExamsList() {
     try {
       await fetch(`${API_URL}/exams/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: "Bearer " + token }
       });
       setExams(exams.filter((exam) => exam._id !== id));
     } catch (err) {
@@ -53,10 +44,9 @@ function ExamsList() {
     try {
       const res = await fetch(`${API_URL}/exams/${id}/publish`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: "Bearer " + token }
       });
       const data = await res.json();
-
       if (data.exam) {
         setExams(
           exams.map((e) => (e._id === id ? { ...e, isPublished: data.exam.isPublished } : e))
@@ -72,9 +62,6 @@ function ExamsList() {
     const matchesSemester = semesterFilter ? exam.semester === Number(semesterFilter) : true;
     return matchesSearch && matchesSemester;
   });
-
-  if (loading) return <div className="container"><h3>Loading exams...</h3></div>;
-  if (error) return <div className="container"><p className="error">{error}</p></div>;
 
   return (
     <div className="container">
